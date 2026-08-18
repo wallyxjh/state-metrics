@@ -277,6 +277,14 @@ jobs:
           docker save "${GHCR_REPO}-cluster:${IMAGE_TAG}" | gzip > "release-assets/${TAR_NAME}"
           ls -lh "release-assets/${TAR_NAME}"
 
+      - name: Upload sealos image package
+        uses: actions/upload-artifact@v6
+        with:
+          name: state-metrics-cluster-${{ steps.meta.outputs.version }}-${{ matrix.arch }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Install oss tools
         run: |
           set -euo pipefail
@@ -284,6 +292,7 @@ jobs:
           curl -fsSL https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
 
       - name: Sync to OSS
+        continue-on-error: true
         run: |
           set -euo pipefail
           IMAGE_TAG="${{ steps.meta.outputs.version }}"
